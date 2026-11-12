@@ -1,0 +1,28 @@
+# Kanalga kirish so'rovlarini har 10 daqiqada avtomatik qabul qilish.
+# 19:00–21:59 (Toshkent) da ishlamaydi — u paytda postlar jarayoni so'rovlarni o'zi qabul qiladi.
+name: Join requests
+
+on:
+  schedule:
+    - cron: "*/10 0-13,17-23 * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: join-requests
+  cancel-in-progress: false
+
+jobs:
+  approve:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install requests
+      - name: So'rovlarni qabul qilish
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          CHANNEL_ID: ${{ secrets.CHANNEL_ID }}
+        run: python approve.py
